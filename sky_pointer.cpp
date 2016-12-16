@@ -29,8 +29,8 @@ int16_t calcSteps(uint16_t pos, uint16_t tgt) {
     backward otherwhise.
     */
     if (pos < USTEPS_REV/2) {
-	// Transform delta to its (negative) simmetric.
-	return (delta2 < 0) ? delta1 - USTEPS_REV : delta1;
+        // Transform delta to its (negative) simmetric.
+        return (delta2 < 0) ? delta1 - USTEPS_REV : delta1;
     }
     // Transform delta to its (positive) simmetric.
     return (delta2 > 0) ? delta1 + USTEPS_REV : delta1;

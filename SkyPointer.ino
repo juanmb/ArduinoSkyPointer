@@ -122,7 +122,7 @@ void setup() {
     sCmd.addCommand("I", ProcessId);      // I\r
     sCmd.addCommand("Q", ProcessQuit);    // Q\r
     sCmd.addCommand("L", ProcessLaser);   // L enable\r
-    sCmd.addCommand("T", ProcessTimeout);   // T XXXX\r
+    //sCmd.addCommand("T", ProcessTimeout);   // T XXXX\r
     sCmd.addCommand("R", ProcessReadCalib);  // R N\r
     sCmd.addCommand("W", ProcessWriteCalib); // W N XXXX\r
     sCmd.addDefaultHandler(Unrecognized);
