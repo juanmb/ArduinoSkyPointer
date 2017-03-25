@@ -2,6 +2,12 @@
 #include <EEPROM.h>
 #include "sky_pointer.h"
 
+#define VERSION "2.1"
+
+#if MAXSERIALCOMMANDS < 11
+#error "Please increase MAXSERIALCOMMANDS to 11 in SerialCommand library"
+#endif
+
 
 SkyPointer sp = SkyPointer();
 SerialCommand sCmd;
@@ -51,7 +57,7 @@ void ProcessGetPos() {
 
 // Get ID
 void ProcessId() {
-  Serial.print("SkyPointer 1.0\r");
+    Serial.print("SkyPointer v"VERSION"\r");
 }
 
 // Release both motors and shut down the laser
@@ -77,32 +83,32 @@ void ProcessTimeout() {
 
 // Read a calibration value (4 bytes) from EEPROM
 void ProcessReadCalib () {
-  uint8_t n = atoi(sCmd.next());
-  if (n > 3) {
-      Serial.print("NK\r");
-      return;
-  }
-  char buf[12], data[4];
-  for (int i = 0; i < 4; i++) {
-    data[i] = EEPROM.read(4*n + i);
-  }
-  sprintf(buf, "R %08lx\r", *(uint32_t *)data);
-  Serial.print(buf);
+    uint8_t n = atoi(sCmd.next());
+    if (n > 3) {
+        Serial.print("NK\r");
+        return;
+    }
+    char buf[12], data[4];
+    for (int i = 0; i < 4; i++) {
+        data[i] = EEPROM.read(4*n + i);
+    }
+    sprintf(buf, "R %08lx\r", *(uint32_t *)data);
+    Serial.print(buf);
 }
 
 // Write a calibration value (4 bytes) to EEPROM
 void ProcessWriteCalib () {
-  uint8_t n = atoi(sCmd.next());
-  if (n > 3) {
-      Serial.print("NK\r");
-      return;
-  }
-  char data[4];
-  sscanf(sCmd.next(), "%lx", (uint32_t *)data);
-  for (int i = 0; i < 4; i++) {
-    EEPROM.write(4*n + i, data[i]);
-  }
-  Serial.print("OK\r");
+    uint8_t n = atoi(sCmd.next());
+    if (n > 3) {
+        Serial.print("NK\r");
+        return;
+    }
+    char data[4];
+    sscanf(sCmd.next(), "%lx", (uint32_t *)data);
+    for (int i = 0; i < 4; i++) {
+        EEPROM.write(4*n + i, data[i]);
+    }
+    Serial.print("OK\r");
 }
 
 void Unrecognized() {
@@ -122,7 +128,7 @@ void setup() {
     sCmd.addCommand("I", ProcessId);      // I\r
     sCmd.addCommand("Q", ProcessQuit);    // Q\r
     sCmd.addCommand("L", ProcessLaser);   // L enable\r
-    //sCmd.addCommand("T", ProcessTimeout);   // T XXXX\r
+    sCmd.addCommand("T", ProcessTimeout);   // T XXXX\r
     sCmd.addCommand("R", ProcessReadCalib);  // R N\r
     sCmd.addCommand("W", ProcessWriteCalib); // W N XXXX\r
     sCmd.addDefaultHandler(Unrecognized);
