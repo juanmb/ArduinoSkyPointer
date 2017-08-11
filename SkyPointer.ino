@@ -16,20 +16,34 @@ SerialCommand sCmd;
 // Move both motors to an absolute position
 void ProcessGoto() {
     int16_t az, alt;
+    uint8_t speed;
+    char *ptr;
 
     az = atoi(sCmd.next());
     alt = atoi(sCmd.next());
-    sp.goTo(az, alt);
+    ptr = sCmd.next();
+    if (ptr)
+        speed = atoi(ptr);
+    else
+        speed = GOTO_SPEED;
+    sp.goTo(az, alt, speed);
     Serial.print("OK\r");
 }
 
 // Move both motors to a relative position
 void ProcessMove() {
     int16_t az, alt;
+    uint8_t speed;
+    char *ptr;
 
     az = atoi(sCmd.next());
     alt = atoi(sCmd.next());
-    sp.move(az, alt);
+    ptr = sCmd.next();
+    if (ptr)
+        speed = atoi(ptr);
+    else
+        speed = MOVE_SPEED;
+    sp.move(az, alt, speed);
     Serial.print("OK\r");
 }
 

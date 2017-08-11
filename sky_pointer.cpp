@@ -48,7 +48,6 @@ SkyPointer::SkyPointer(void) :
 void SkyPointer::init(void) {
     // Enable pin
     pinMode(ENABLE, OUTPUT);
-    digitalWrite(ENABLE, LOW);
     // Configure outputs
     pinMode(XSTEP, OUTPUT);
     pinMode(XDIR, OUTPUT);
@@ -70,6 +69,7 @@ void SkyPointer::init(void) {
     altMotor.setPinsInverted(true, false, true);
     altMotor.setAcceleration(ACCEL);
     altMotor.setEnablePin(ENABLE);
+    digitalWrite(ENABLE, HIGH);
 }
 
 void SkyPointer::setLaserTimeout(uint32_t t) {
@@ -95,16 +95,16 @@ void SkyPointer::home() {
     homing = true;
 }
 
-void SkyPointer::move(int16_t az, int16_t alt) {
+void SkyPointer::move(int16_t az, int16_t alt, uint8_t speed) {
     digitalWrite(ENABLE, LOW);
-    azMotor.setMaxSpeed(MOVE_SPEED);
-    altMotor.setMaxSpeed(MOVE_SPEED);
+    azMotor.setMaxSpeed(speed);
+    altMotor.setMaxSpeed(speed);
     azMotor.move(az);
     altMotor.move(alt);
     laser(true);
 }
 
-void SkyPointer::goTo(uint16_t az, uint16_t alt) {
+void SkyPointer::goTo(uint16_t az, uint16_t alt, uint8_t speed) {
     int16_t delta_az, delta_alt;
     uint16_t pos;
     float ratio;
@@ -115,8 +115,8 @@ void SkyPointer::goTo(uint16_t az, uint16_t alt) {
     // is true.
     // If max speed was to be reached, the maximum speed for any motor should be
     // scaled too by the ratio.
-    azMotor.setMaxSpeed(GOTO_SPEED);
-    altMotor.setMaxSpeed(GOTO_SPEED);
+    azMotor.setMaxSpeed(speed);
+    altMotor.setMaxSpeed(speed);
 
     // AZ motor
     az = MOD(az, USTEPS_REV);
