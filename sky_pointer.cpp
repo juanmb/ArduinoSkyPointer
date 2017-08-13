@@ -95,7 +95,7 @@ void SkyPointer::home() {
     homing = true;
 }
 
-void SkyPointer::move(int16_t az, int16_t alt, uint8_t speed) {
+void SkyPointer::move(int16_t az, int16_t alt, uint16_t speed) {
     digitalWrite(ENABLE, LOW);
     azMotor.setMaxSpeed(speed);
     altMotor.setMaxSpeed(speed);
@@ -104,7 +104,7 @@ void SkyPointer::move(int16_t az, int16_t alt, uint8_t speed) {
     laser(true);
 }
 
-void SkyPointer::goTo(uint16_t az, uint16_t alt, uint8_t speed) {
+void SkyPointer::goTo(uint16_t az, uint16_t alt, uint16_t speed) {
     int16_t delta_az, delta_alt;
     uint16_t pos;
     float ratio;

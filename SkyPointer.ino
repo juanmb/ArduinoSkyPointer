@@ -16,7 +16,7 @@ SerialCommand sCmd;
 // Move both motors to an absolute position
 void ProcessGoto() {
     int16_t az, alt;
-    uint8_t speed;
+    uint16_t speed;
     char *ptr;
 
     az = atoi(sCmd.next());
@@ -33,7 +33,7 @@ void ProcessGoto() {
 // Move both motors to a relative position
 void ProcessMove() {
     int16_t az, alt;
-    uint8_t speed;
+    uint16_t speed;
     char *ptr;
 
     az = atoi(sCmd.next());
