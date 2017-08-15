@@ -40,8 +40,8 @@ int16_t calcSteps(uint16_t pos, uint16_t tgt) {
 SkyPointer::SkyPointer(void) :
     azMotor(AccelStepper::DRIVER, XSTEP, XDIR),
     altMotor(AccelStepper::DRIVER, YSTEP, YDIR) {
+    _state = ST_IDLE;
     laserOnTime = 0;
-    homing = false;
     laserTimeout = LASER_TIMEOUT; // Default laser timeout
 }
 
@@ -90,9 +90,9 @@ uint8_t SkyPointer::isLaserOn(void) {
 
 void SkyPointer::home() {
     digitalWrite(ENABLE, LOW);
-    altMotor.setMaxSpeed(40);
-    altMotor.move(-1000);
-    homing = true;
+    altMotor.setMaxSpeed(HOME_FAST_SPEED);
+    altMotor.move(-USTEPS_REV);
+    _state = ST_HOMING_FW;
 }
 
 void SkyPointer::move(int16_t az, int16_t alt, uint16_t speed) {
@@ -167,21 +167,37 @@ void SkyPointer::run() {
     azMotor.run();
     altMotor.run();
 
-    if (isLaserOn()) {
-        // Switch off the laser if timeout has been reached
-        if (millis() - laserOnTime > laserTimeout) {
-            laser(false);
+    // Switch off the laser if timeout has been reached
+    if (isLaserOn() && ((millis() - laserOnTime > laserTimeout))) {
+        laser(false);
+    }
+
+    switch (_state) {
+    case ST_HOMING_FW:
+        if (digitalRead(PHOTO_PIN)) {
+            altMotor.setMaxSpeed(HOME_FAST_SPEED);
+            altMotor.move(USTEPS_REV);
+            _state = ST_HOMING_BW;
         }
-    } else if (!homing) {
-        // Switch on the laser if the motors are running
+	break;
+    case ST_HOMING_BW:
+        if (!digitalRead(PHOTO_PIN)) {
+            altMotor.setMaxSpeed(HOME_SLOW_SPEED);
+            altMotor.move(-USTEPS_REV);
+            _state = ST_HOMING_SLOW;
+        }
+	break;
+    case ST_HOMING_SLOW:
+        if (digitalRead(PHOTO_PIN)) {
+            altMotor.stop();
+            altMotor.setCurrentPosition(0);
+            _state = ST_IDLE;
+        }
+	break;
+    default:
+        // Switch on the laser if the motors are running, but not homing
         if (azMotor.isRunning() || (altMotor.isRunning())) {
             laser(true);
         }
-    }
-
-    if (homing && digitalRead(PHOTO_PIN)) {
-        altMotor.stop();
-        altMotor.setCurrentPosition(0);
-        homing = false;
-    }
+    };
 }

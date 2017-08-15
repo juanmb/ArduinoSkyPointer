@@ -18,10 +18,14 @@ This code is part of the SkyPointer project:
 #ifdef DEBUG
 #define GOTO_SPEED 100
 #define MOVE_SPEED 100
+#define HOME_FAST_SPEED 20
+#define HOME_SLOW_SPEED 20
 #define ACCEL 300
 #else
 #define GOTO_SPEED 6000
 #define MOVE_SPEED 200
+#define HOME_FAST_SPEED 400
+#define HOME_SLOW_SPEED 20
 #define ACCEL 4000
 #endif
 
@@ -63,6 +67,13 @@ This code is part of the SkyPointer project:
 // Modulus operator
 #define MOD(a, b) ((((a) % (b)) + (b)) % (b))
 
+typedef enum state {
+	ST_IDLE,
+	ST_HOMING_FW,
+	ST_HOMING_BW,
+	ST_HOMING_SLOW,
+} state;
+
 
 class SkyPointer {
     public:
@@ -84,9 +95,9 @@ class SkyPointer {
     private:
         uint32_t laserOnTime;  // Elapsed ON time for laser
         uint32_t laserTimeout; // Laser timeout
-	bool homing;
         AccelStepper azMotor;
         AccelStepper altMotor;
+	state _state;
 };
 
 #endif
