@@ -12,12 +12,13 @@ Date:      2016/May/26
 
 // Calculate the relative movement of a motor for going from 'pos' to 'tgt'
 // in the shortest time
-int16_t calcSteps(uint16_t pos, uint16_t tgt) {
+int16_t calcSteps(uint16_t pos, uint16_t tgt)
+{
     uint16_t simPos;
     int16_t delta1, delta2;
 
     // Obtain the simmetric position
-    simPos = MOD(pos + USTEPS_REV/2, USTEPS_REV);
+    simPos = MOD(pos + USTEPS_REV / 2, USTEPS_REV);
     // Distance to go (positive / negative)
     delta1 = tgt - pos;
     // Distance from simmetric position
@@ -28,11 +29,10 @@ int16_t calcSteps(uint16_t pos, uint16_t tgt) {
     relative distance to go. If positive, the motor turns forward, or
     backward otherwhise.
     */
-    if (pos < USTEPS_REV/2) {
-	// Transform delta to its (negative) simmetric.
-	return (delta2 < 0) ? delta1 - USTEPS_REV : delta1;
-    }
-    else {
+    if (pos < USTEPS_REV / 2) {
+        // Transform delta to its (negative) simmetric.
+        return (delta2 < 0) ? delta1 - USTEPS_REV : delta1;
+    } else {
         // Transform delta to its (positive) simmetric.
         return (delta2 > 0) ? delta1 + USTEPS_REV : delta1;
     }
@@ -41,14 +41,16 @@ int16_t calcSteps(uint16_t pos, uint16_t tgt) {
 // Shield class
 SkyPointer::SkyPointer(void) :
     azMotor(AccelStepper::DRIVER, XSTEP, XDIR),
-    altMotor(AccelStepper::DRIVER, YSTEP, YDIR) {
+    altMotor(AccelStepper::DRIVER, YSTEP, YDIR)
+{
     _state = ST_IDLE;
     laserOnTime = 0;
     absPos = 0;
     laserTimeout = LASER_TIMEOUT; // Default laser timeout
 }
 
-void SkyPointer::init(void) {
+void SkyPointer::init(void)
+{
     // Enable pin
     pinMode(ENABLE, OUTPUT);
     // Configure outputs
@@ -77,7 +79,8 @@ void SkyPointer::init(void) {
 
 // Calculate the relative movement of a motor for going from 'pos' to 'tgt'
 // in the shortest time
-int16_t SkyPointer::calcAzDelta(uint16_t tgt) {
+int16_t SkyPointer::calcAzDelta(uint16_t tgt)
+{
     // Get the motor position
     uint16_t pos = MOD(azMotor.currentPosition(), USTEPS_REV);
     // Calculate relative motion
@@ -94,7 +97,8 @@ int16_t SkyPointer::calcAzDelta(uint16_t tgt) {
     return res;
 }
 
-int16_t SkyPointer::calcAltDelta(uint16_t tgt) {
+int16_t SkyPointer::calcAltDelta(uint16_t tgt)
+{
     // Get the motor position
     uint16_t pos = MOD(altMotor.currentPosition(), USTEPS_REV);
     // Calculate relative motion
@@ -102,11 +106,13 @@ int16_t SkyPointer::calcAltDelta(uint16_t tgt) {
     return res;
 }
 
-void SkyPointer::setLaserTimeout(uint32_t t) {
+void SkyPointer::setLaserTimeout(uint32_t t)
+{
     laserTimeout = t;
 }
 
-void SkyPointer::laser(uint8_t enable) {
+void SkyPointer::laser(uint8_t enable)
+{
     // Inverted logic: 0 switches laser on, 1 switches it off
     digitalWrite(LASER_PIN, !enable);
     if (enable) {
@@ -114,18 +120,21 @@ void SkyPointer::laser(uint8_t enable) {
     }
 }
 
-uint8_t SkyPointer::isLaserOn(void) {
+uint8_t SkyPointer::isLaserOn(void)
+{
     return !digitalRead(LASER_PIN);
 }
 
-void SkyPointer::home() {
+void SkyPointer::home()
+{
     digitalWrite(ENABLE, LOW);
     altMotor.setMaxSpeed(HOME_FAST_SPEED);
     altMotor.move(-USTEPS_REV);
     _state = ST_HOMING_FW;
 }
 
-void SkyPointer::move(int16_t az, int16_t alt, uint16_t speed) {
+void SkyPointer::move(int16_t az, int16_t alt, uint16_t speed)
+{
     digitalWrite(ENABLE, LOW);
     azMotor.setMaxSpeed(speed);
     altMotor.setMaxSpeed(speed);
@@ -134,7 +143,8 @@ void SkyPointer::move(int16_t az, int16_t alt, uint16_t speed) {
     laser(true);
 }
 
-void SkyPointer::goTo(uint16_t az, uint16_t alt, uint16_t speed) {
+void SkyPointer::goTo(uint16_t az, uint16_t alt, uint16_t speed)
+{
     int16_t delta_az, delta_alt;
     float ratio;
 
@@ -157,7 +167,7 @@ void SkyPointer::goTo(uint16_t az, uint16_t alt, uint16_t speed) {
 
     // Assign different accelerations to make a linear motion by making both
     // motors arrive at target at the same time. Speeds are kept proportional.
-    if ((delta_az != 0) && (delta_alt!=0)) {
+    if ((delta_az != 0) && (delta_alt != 0)) {
         if (abs(delta_az) >= abs(delta_alt)) {
             ratio = (float)(abs(delta_alt)) / abs(delta_az); // ratio < 1
             azMotor.setAcceleration(ACCEL);
@@ -176,21 +186,25 @@ void SkyPointer::goTo(uint16_t az, uint16_t alt, uint16_t speed) {
     laser(true);
 }
 
-void SkyPointer::getPos(uint16_t *az, uint16_t *alt) {
+void SkyPointer::getPos(uint16_t *az, uint16_t *alt)
+{
     *az = MOD(azMotor.currentPosition(), USTEPS_REV);
     *alt = MOD(altMotor.currentPosition(), USTEPS_REV);
 }
 
-void SkyPointer::stop() {
+void SkyPointer::stop()
+{
     azMotor.stop();
     altMotor.stop();
 }
 
-void SkyPointer::releaseMotors() {
+void SkyPointer::releaseMotors()
+{
     digitalWrite(ENABLE, HIGH);
 }
 
-void SkyPointer::run() {
+void SkyPointer::run()
+{
     azMotor.run();
     altMotor.run();
 
@@ -207,21 +221,21 @@ void SkyPointer::run() {
             altMotor.move(USTEPS_REV);
             _state = ST_HOMING_BW;
         }
-	break;
+        break;
     case ST_HOMING_BW:
         if (!digitalRead(PHOTO_PIN)) {
             altMotor.setMaxSpeed(HOME_SLOW_SPEED);
             altMotor.move(-USTEPS_REV);
             _state = ST_HOMING_SLOW;
         }
-	break;
+        break;
     case ST_HOMING_SLOW:
         if (digitalRead(PHOTO_PIN)) {
             altMotor.stop();
             altMotor.setCurrentPosition(0);
             _state = ST_IDLE;
         }
-	break;
+        break;
     default:
         // Switch on the laser if the motors are running, but not homing
         if (azMotor.isRunning() || (altMotor.isRunning())) {

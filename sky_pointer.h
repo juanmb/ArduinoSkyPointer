@@ -71,39 +71,39 @@ This code is part of the SkyPointer project:
 #define MOD(a, b) ((((a) % (b)) + (b)) % (b))
 
 typedef enum state {
-	ST_IDLE,
-	ST_HOMING_FW,
-	ST_HOMING_BW,
-	ST_HOMING_SLOW,
+    ST_IDLE,
+    ST_HOMING_FW,
+    ST_HOMING_BW,
+    ST_HOMING_SLOW,
 } state;
 
 
 class SkyPointer {
-    public:
-        SkyPointer(void);
-        void init(void);            // Initialize the hardware
-        int16_t calcAzDelta(uint16_t);
-        int16_t calcAltDelta(uint16_t);
-        void run(void);             // Update the position of the motors
-        void laser(uint8_t);        // Turn ON/OFF the laser
-	uint8_t isLaserOn(void);    // Check the laser state
-        void setLaserTimeout(uint32_t);
-        void home();                // Find home position
-        void move(int16_t az, int16_t alt, uint16_t speed);
-        void goTo(uint16_t az, uint16_t alt, uint16_t speed);
-        void getPos(uint16_t *az, uint16_t *alt);
-        void stop();                // Stop both motors
-        void releaseMotors();       // Disable the motor drivers
-        void setTimeOn(uint32_t);   // Store elapsed ON time for laser
-        uint32_t getTimeOn(void);   // Get elapsed ON time for laser
+public:
+    SkyPointer(void);
+    void init(void);            // Initialize the hardware
+    int16_t calcAzDelta(uint16_t);
+    int16_t calcAltDelta(uint16_t);
+    void run(void);             // Update the position of the motors
+    void laser(uint8_t);        // Turn ON/OFF the laser
+    uint8_t isLaserOn(void);    // Check the laser state
+    void setLaserTimeout(uint32_t);
+    void home();                // Find home position
+    void move(int16_t az, int16_t alt, uint16_t speed);
+    void goTo(uint16_t az, uint16_t alt, uint16_t speed);
+    void getPos(uint16_t *az, uint16_t *alt);
+    void stop();                // Stop both motors
+    void releaseMotors();       // Disable the motor drivers
+    void setTimeOn(uint32_t);   // Store elapsed ON time for laser
+    uint32_t getTimeOn(void);   // Get elapsed ON time for laser
 
-    private:
-        uint32_t laserOnTime;  // Elapsed ON time for laser
-        uint32_t laserTimeout; // Laser timeout
-        AccelStepper azMotor;
-        AccelStepper altMotor;
-        int16_t absPos;        // Absolute rotation
-	state _state;
+private:
+    uint32_t laserOnTime;  // Elapsed ON time for laser
+    uint32_t laserTimeout; // Laser timeout
+    AccelStepper azMotor;
+    AccelStepper altMotor;
+    int16_t absPos;        // Absolute rotation
+    state _state;
 };
 
 #endif
