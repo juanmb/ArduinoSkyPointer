@@ -32,8 +32,10 @@ int16_t calcSteps(uint16_t pos, uint16_t tgt) {
 	// Transform delta to its (negative) simmetric.
 	return (delta2 < 0) ? delta1 - USTEPS_REV : delta1;
     }
-    // Transform delta to its (positive) simmetric.
-    return (delta2 > 0) ? delta1 + USTEPS_REV : delta1;
+    else {
+        // Transform delta to its (positive) simmetric.
+        return (delta2 > 0) ? delta1 + USTEPS_REV : delta1;
+    }
 }
 
 // Shield class
@@ -42,6 +44,7 @@ SkyPointer::SkyPointer(void) :
     altMotor(AccelStepper::DRIVER, YSTEP, YDIR) {
     _state = ST_IDLE;
     laserOnTime = 0;
+    absPos = 0;
     laserTimeout = LASER_TIMEOUT; // Default laser timeout
 }
 
@@ -70,6 +73,33 @@ void SkyPointer::init(void) {
     altMotor.setAcceleration(ACCEL);
     altMotor.setEnablePin(ENABLE);
     digitalWrite(ENABLE, HIGH);
+}
+
+// Calculate the relative movement of a motor for going from 'pos' to 'tgt'
+// in the shortest time
+int16_t SkyPointer::calcAzDelta(uint16_t tgt) {
+    // Get the motor position
+    uint16_t pos = MOD(azMotor.currentPosition(), USTEPS_REV);
+    // Calculate relative motion
+    int16_t res = calcSteps(pos, tgt);
+    //Serial.println(res);
+    // Check that absolute position is in range
+    if (res != 0) {
+        if (abs(absPos + res) > SEMIRANGE * USTEPS_REV) {
+            res = (res > 0) ? res - USTEPS_REV : res + USTEPS_REV;
+        }
+    }
+    absPos += res;
+    //Serial.println(absPos);
+    return res;
+}
+
+int16_t SkyPointer::calcAltDelta(uint16_t tgt) {
+    // Get the motor position
+    uint16_t pos = MOD(altMotor.currentPosition(), USTEPS_REV);
+    // Calculate relative motion
+    int16_t res = calcSteps(pos, tgt);
+    return res;
 }
 
 void SkyPointer::setLaserTimeout(uint32_t t) {
@@ -106,7 +136,6 @@ void SkyPointer::move(int16_t az, int16_t alt, uint16_t speed) {
 
 void SkyPointer::goTo(uint16_t az, uint16_t alt, uint16_t speed) {
     int16_t delta_az, delta_alt;
-    uint16_t pos;
     float ratio;
 
     digitalWrite(ENABLE, LOW);
@@ -120,13 +149,11 @@ void SkyPointer::goTo(uint16_t az, uint16_t alt, uint16_t speed) {
 
     // AZ motor
     az = MOD(az, USTEPS_REV);
-    pos = MOD(azMotor.currentPosition(), USTEPS_REV);
-    delta_az = calcSteps(pos, az);
+    delta_az = calcAzDelta(az);
 
     // ALT motor
     alt = MOD(alt, USTEPS_REV);
-    pos = MOD(altMotor.currentPosition(), USTEPS_REV);
-    delta_alt = calcSteps(pos, alt);
+    delta_alt = calcAltDelta(alt);
 
     // Assign different accelerations to make a linear motion by making both
     // motors arrive at target at the same time. Speeds are kept proportional.
@@ -172,6 +199,7 @@ void SkyPointer::run() {
         laser(false);
     }
 
+    // state machine
     switch (_state) {
     case ST_HOMING_FW:
         if (digitalRead(PHOTO_PIN)) {
