@@ -138,6 +138,13 @@ void SkyPointer::move(int16_t az, int16_t alt, uint16_t speed)
     digitalWrite(ENABLE, LOW);
     azMotor.setMaxSpeed(speed);
     altMotor.setMaxSpeed(speed);
+
+    // limit altitude range
+    int16_t curr;
+    curr = altMotor.currentPosition();
+    alt = (curr + alt > USTEPS_REV / 4) ? (USTEPS_REV / 4 - curr) : alt;
+    alt = (curr + alt < 0) ? -curr : alt;
+
     azMotor.move(az);
     altMotor.move(alt);
     laser(true);
